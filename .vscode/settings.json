@@ -1,5 +1,5 @@
 {
-    "dart.flutterSdkPath": ".fvm/flutter_sdk",
+    "dart.flutterSdkPath": "C:\\Users\\Rauf Endro Widagdo\fvm\\versions",
     
     "search.exclude": {
       "**/.fvm": true

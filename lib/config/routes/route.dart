@@ -14,6 +14,11 @@ class RouterX {
         builder: (context, state) => const HomeScreen(),
       ),
       // GoRoute(
+      //   path: '/login',
+      //   builder: (context, state) => const LoginScreen(),
+      // ),
+
+      // GoRoute(
       //   path: '/search',
       //   builder: (context, state) => const SearchScreen(),
       // ),
