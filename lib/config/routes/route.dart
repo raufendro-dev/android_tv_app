@@ -1,5 +1,6 @@
 import "package:go_router/go_router.dart";
-
+import '../../pages/splashScreen.dart';
+import '../../pages/homeScreen.dart';
 
 class RouterX {
   var router = GoRouter(
