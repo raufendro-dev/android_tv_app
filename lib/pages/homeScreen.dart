@@ -50,11 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: TextStyle(
                                       fontSize: 15, color: Colors.white),
                                 ),
-                                Text(
-                                  "Aston Jakarta",
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.white),
-                                )
+                          
                               ]),
                         ),
                       ),
@@ -117,16 +113,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   InkWell(
                     onTap: () async {
                       print("pencet");
-                      final Uri _url = Uri.parse('http://www.youtube.com/');
+                      final Uri _url = Uri.parse('nflx://www.netflix.com');
+                      // final Uri _url = Uri.parse('https://www.youtube.com/');
+                      if (!await launchUrl(_url)) {
+    throw Exception('Could not launch $_url');
+  }
                       var packagename = 'com.netflix.ninja';
-                      await LaunchApp.openApp(androidPackageName: packagename);
+                      // await LaunchApp.openApp(androidPackageName: packagename);
                     },
                     child: Container(
                       width: 200,
                       height: 100,
+                      child: Center(child: Image.network("https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png", width: 100)),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white, width: 2)),
+                    
                     ),
                   ),
                   SizedBox(
