@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:one_clock/one_clock.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:external_app_launcher/external_app_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,74 +14,107 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Image.asset('assets/logo/image.png'),
+            DigitalClock(
+                showSeconds: false,
+                isLive: false,
+                digitalClockTextColor: Colors.white,
+                textScaleFactor: 2.5,
+                datetime: DateTime.now()),
+            Row(
+              children: [
+                Container(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Selamat datang, Rauf Endro",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                        Text(
+                          "No. Kamar 729",
+                          style: TextStyle(fontSize: 15, color: Colors.white),
+                        ),
+                      ]),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
       body: SafeArea(
           child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     children: [
+            //       // Image.asset('assets/logo/image.png'),
+            //       DigitalClock(
+            //           showSeconds: false,
+            //           isLive: false,
+            //           digitalClockTextColor: Colors.white,
+            //           textScaleFactor: 2.5,
+            //           datetime: DateTime.now()),
+            //       Row(
+            //         children: [
+            //           InkWell(
+            //             onTap: () {},
+            //             child: Container(
+            //               child: Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.end,
+            //                   children: [
+            //                     Text(
+            //                       "Selamat datang, Rauf Endro",
+            //                       style: TextStyle(
+            //                           fontSize: 18, color: Colors.white),
+            //                     ),
+            //                     Text(
+            //                       "No. Kamar 729",
+            //                       style: TextStyle(
+            //                           fontSize: 15, color: Colors.white),
+            //                     ),
+            //                   ]),
+            //             ),
+            //           ),
+            //         ],
+            //       )
+            //     ],
+            //   ),
+            // ),
+
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Image.asset('assets/logo/image.png'),
-                  DigitalClock(
-                      showSeconds: false,
-                      isLive: false,
-                      digitalClockTextColor: Colors.white,
-                      textScaleFactor: 2.5,
-                      datetime: DateTime.now()),
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () {},
-                        child: Container(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "Selamat datang, Rauf Endro",
-                                  style: TextStyle(
-                                      fontSize: 18, color: Colors.white),
-                                ),
-                                Text(
-                                  "No. Kamar 729",
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.white),
-                                ),
-                          
-                              ]),
+              padding: const EdgeInsets.only(left: 60, top: 20),
+              child: InkWell(
+                onTap: () {},
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.wifi),
+                        SizedBox(
+                          width: 10,
                         ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 60),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.wifi),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        "Informasi Wifi",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Text("SSID : Hotelku"),
-                  Text("Username : kamar729"),
-                  Text("Password : azHgsko13")
-                ],
+                        Text(
+                          "Informasi Wifi Pengunjung",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    Text("SSID : Hotelku"),
+                    Text("Username : kamar729"),
+                    Text("Password : azHgsko13")
+                  ],
+                ),
               ),
             ),
             SizedBox(
@@ -104,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             SizedBox(
-              height: 10,
+              height: 20,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -116,34 +148,61 @@ class _HomeScreenState extends State<HomeScreen> {
                       final Uri _url = Uri.parse('nflx://www.netflix.com');
                       // final Uri _url = Uri.parse('https://www.youtube.com/');
                       if (!await launchUrl(_url)) {
-    throw Exception('Could not launch $_url');
-  }
-                      var packagename = 'com.netflix.ninja';
-                      // await LaunchApp.openApp(androidPackageName: packagename);
+                        throw Exception('Could not launch $_url');
+                      }
                     },
                     child: Container(
                       width: 200,
                       height: 100,
-                      child: Center(child: Image.network("https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png", width: 100)),
+                      child: Center(
+                          child: Image.network(
+                              "https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png",
+                              width: 100)),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white, width: 2)),
-                    
                     ),
                   ),
                   SizedBox(
                     width: 30,
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () async {
+                      final Uri _url = Uri.parse('https://www.youtube.com/');
+                      if (!await launchUrl(_url)) {
+                        throw Exception('Could not launch $_url');
+                      }
+                    },
                     child: Container(
                       width: 200,
                       height: 100,
+                      child: Center(
+                          child: Image.network(
+                              "http://raufendro-dev.com/gambar/yt.png",
+                              width: 100)),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.white, width: 2)),
                     ),
                   ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 37,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 50),
+              child: Row(
+                children: [
+                  Text(
+                    "Room",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Icon(Icons.hotel_rounded)
                 ],
               ),
             ),
