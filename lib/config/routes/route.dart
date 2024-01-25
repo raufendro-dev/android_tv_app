@@ -1,5 +1,6 @@
 import 'package:android_tv_app/pages/informasiwifiScreen.dart';
 import 'package:android_tv_app/pages/pelayanankamarScreen.dart';
+import 'package:android_tv_app/pages/saluranTV.dart';
 import "package:go_router/go_router.dart";
 import '../../pages/splashScreen.dart';
 import '../../pages/homeScreen.dart';
@@ -9,7 +10,7 @@ class RouterX {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
         path: '/home',
@@ -22,6 +23,10 @@ class RouterX {
       GoRoute(
         path: '/informasiwifi',
         builder: (context, state) => const InformasiwifiScreen(),
+      ),
+      GoRoute(
+        path: '/salurantv',
+        builder: (context, state) => const SaluranTV(),
       ),
       // GoRoute(
       //   path: '/login',

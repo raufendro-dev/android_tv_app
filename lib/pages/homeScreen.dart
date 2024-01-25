@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:installed_apps/installed_apps.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:one_clock/one_clock.dart';
@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       canPop: false,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           elevation: 0,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -205,6 +206,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.white, width: 2)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 30,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        context.push('/salurantv');
+                      },
+                      child: Container(
+                        width: 200,
+                        height: 100,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white, width: 2)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.live_tv_rounded,
+                              size: 50,
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text("Live TV")
+                          ],
+                        ),
                       ),
                     ),
                   ],

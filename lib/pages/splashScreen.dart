@@ -1,3 +1,4 @@
+import 'package:android_tv_app/pages/homeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,7 +12,9 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   cek() async {
     await Future.delayed(Duration(seconds: 2));
-    context.go('/home');
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => HomeScreen()));
+    // context.push('/home');
   }
 
   @override
