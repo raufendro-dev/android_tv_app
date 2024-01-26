@@ -86,6 +86,46 @@ class _SaluranTVState extends State<SaluranTV> {
                           border: Border.all(color: Colors.white, width: 2)),
                     ),
                   ),
+                  InkWell(
+                    onTap: () async {
+                      final Uri _url =
+                          Uri.parse('https://www.vidio.com/live/204-sctv');
+                      if (!await launchUrl(_url)) {
+                        throw Exception('Could not launch $_url');
+                      }
+                    },
+                    child: Container(
+                      width: 200,
+                      height: 100,
+                      child: Center(
+                          child: Image.network(
+                              "https://www.sctv.co.id/_nuxt/img/site-logo.43a458b.png",
+                              width: 100)),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white, width: 2)),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      final Uri _url =
+                          Uri.parse('https://www.vidio.com/live/204-sctv');
+                      if (!await launchUrl(_url)) {
+                        throw Exception('Could not launch $_url');
+                      }
+                    },
+                    child: Container(
+                      width: 200,
+                      height: 100,
+                      child: Center(
+                          child: Image.network(
+                              "https://www.sctv.co.id/_nuxt/img/site-logo.43a458b.png",
+                              width: 100)),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white, width: 2)),
+                    ),
+                  ),
                 ]),
           )
         ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:one_clock/one_clock.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var warna = Colors.white;
   var jam = DateTime.now();
+
   void _updateTime() {
     setState(() {
       jam = DateTime.now();
@@ -25,9 +27,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return false;
   }
 
+  String videoId = YoutubePlayer.convertUrlToId(
+      "https://www.youtube.com/watch?v=wVPnEHQuWOU")!;
+  late YoutubePlayerController _controller;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   @override
   void initState() {
     super.initState();
+    _controller = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        mute: false,
+        autoPlay: true,
+        disableDragSeek: false,
+        loop: true,
+        isLive: false,
+        forceHD: true,
+        enableCaption: false,
+        hideControls: true,
+        hideThumbnail: true,
+        showLiveFullscreenButton: false,
+      ),
+    );
     Timer.periodic(Duration(seconds: 1), (timer) => _updateTime());
   }
 
@@ -140,6 +161,43 @@ class _HomeScreenState extends State<HomeScreen> {
               //     ),
               //   ),
               // ),
+
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 50),
+              //   child: InkWell(
+              //     child: Container(
+              //       width: MediaQuery.of(context).size.width,
+              //       height: 200,
+              //       decoration: BoxDecoration(
+              //           border: Border.all(width: 1, color: Colors.white),
+              //           borderRadius: BorderRadius.circular(20)),
+              //       child: VideoPlayer(_controller),
+              //     ),
+              //   ),
+              // ),
+              SizedBox(
+                height: 30,
+              ),
+              Center(
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    height: 300,
+                    width: 500,
+                    child: YoutubePlayerBuilder(
+                      player: YoutubePlayer(controller: _controller),
+                      builder: (context, player) => Scaffold(
+                        key: _scaffoldKey,
+                        body: ListView(
+                          children: [
+                            player,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               SizedBox(
                 height: 20,
               ),
