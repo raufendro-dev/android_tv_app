@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:one_clock/one_clock.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:video_player/video_player.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,47 +27,29 @@ class _HomeScreenState extends State<HomeScreen> {
     return false;
   }
 
-  late VideoPlayerController _controller;
-
-  // String videoId = YoutubePlayer.convertUrlToId(
-  //     "https://www.youtube.com/watch?v=wVPnEHQuWOU")!;
-  // late YoutubePlayerController _controller;
+  String videoId = YoutubePlayer.convertUrlToId(
+      "https://www.youtube.com/watch?v=wVPnEHQuWOU")!;
+  late YoutubePlayerController _controller;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   @override
   void initState() {
     super.initState();
-
-    // _controller = YoutubePlayerController(
-    //   initialVideoId: videoId,
-    //   flags: const YoutubePlayerFlags(
-    //     mute: false,
-    //     autoPlay: true,
-    //     disableDragSeek: false,
-    //     loop: true,
-    //     isLive: false,
-    //     forceHD: true,
-    //     enableCaption: false,
-    //     hideControls: true,
-    //     hideThumbnail: true,
-    //     showLiveFullscreenButton: false,
-    //   ),
-    // );
-    _controller = VideoPlayerController.asset('assets/videos/my_video.mp4');
-    _initializeVideo();
+    _controller = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        mute: false,
+        autoPlay: true,
+        disableDragSeek: false,
+        loop: true,
+        isLive: false,
+        forceHD: true,
+        enableCaption: false,
+        hideControls: true,
+        hideThumbnail: true,
+        showLiveFullscreenButton: false,
+      ),
+    );
     Timer.periodic(Duration(seconds: 1), (timer) => _updateTime());
-  }
-
-  Future<void> _initializeVideo() async {
-    await _controller.initialize();
-    await _controller.setLooping(true);
-    await _controller.play();
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -197,30 +178,26 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: 30,
               ),
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
+              Center(
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    height: 300,
+                    width: 500,
+                    child: YoutubePlayerBuilder(
+                      player: YoutubePlayer(controller: _controller),
+                      builder: (context, player) => Scaffold(
+                        key: _scaffoldKey,
+                        body: ListView(
+                          children: [
+                            player,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              // Center(
-              //   child: InkWell(
-              //     onTap: () {},
-              //     child: Container(
-              //       height: 300,
-              //       width: 500,
-              //       child: YoutubePlayerBuilder(
-              //         player: YoutubePlayer(controller: _controller),
-              //         builder: (context, player) => Scaffold(
-              //           key: _scaffoldKey,
-              //           body: ListView(
-              //             children: [
-              //               player,
-              //             ],
-              //           ),
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
               SizedBox(
                 height: 20,
               ),
