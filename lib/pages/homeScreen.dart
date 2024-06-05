@@ -1,438 +1,252 @@
-import 'dart:async';
-import 'package:installed_apps/installed_apps.dart';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:one_clock/one_clock.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:chewie/chewie.dart';
+import 'package:video_player/video_player.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  var warna = Colors.white;
-  var jam = DateTime.now();
-
-  void _updateTime() {
-    setState(() {
-      jam = DateTime.now();
-    });
+  final List<String> videoUrls = [
+    // Add more URLs as needed
+  ];
+  cek() async {
+    print("jalan");
+    String url = "http://adsvideo.citraweb.co.id/api/iklan/";
+    Map body = {
+      "key": "c6cb45f6ac898a49cae6db1a48b254c9",
+      "auth_office": "eb163727917cbba1eea208541a643e74",
+      "auth_device": "86c034bb216ef4476a1a02a36bc0423d",
+      "sn": "10000316031575",
+      "mac": "B4E265C572C9"
+    };
+    var responseAPI = await http.post(Uri.parse(url), body: jsonEncode(body));
+    print(body);
+    Map<String, dynamic> hasil = jsonDecode(responseAPI.body);
+    print(hasil);
+    if (hasil['data'] != null) {
+      print("data dapat");
+      videoUrls.clear();
+      for (var i = 0; i < hasil['data'].length; i++) {
+        videoUrls.add(hasil['data'][i]['iklan_video_file_url']);
+      }
+      print(videoUrls);
+    }
+    final filePaths = await downloadVideos(videoUrls);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullscreenVideoPlayer(
+          videoPaths: filePaths,
+          initialIndex: 0,
+        ),
+      ),
+    );
   }
 
-  Future<bool> _onWillPop() async {
-    return false;
+  Future<void> _downloadAndPlayVideos(BuildContext context) async {
+    final filePaths = await downloadVideos(videoUrls);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoListScreen(videoPaths: filePaths),
+      ),
+    );
   }
 
-  String videoId = YoutubePlayer.convertUrlToId(
-      "https://www.youtube.com/watch?v=wVPnEHQuWOU")!;
-  late YoutubePlayerController _controller;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  var downloadedVideos = 0;
+
+  Future<List<String>> downloadVideos(List<String> urls) async {
+    List<String> filePaths = [];
+    for (String url in urls) {
+      final response =
+          await http.Client().send(http.Request('GET', Uri.parse(url)));
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = url.split('/').last;
+      final filePath = '${directory.path}/$fileName';
+      final file = File(filePath);
+
+      int totalBytes = response.contentLength ?? 0;
+      int receivedBytes = 0;
+
+      final sink = file.openWrite();
+      setState(() {
+        downloadedVideos = downloadedVideos + 1;
+      });
+      await for (var chunk in response.stream) {
+        sink.add(chunk);
+        receivedBytes += chunk.length;
+        setState(() {
+          _progress = receivedBytes / totalBytes;
+        });
+      }
+      await sink.close();
+      filePaths.add(filePath);
+    }
+    return filePaths;
+  }
+
+  double _progress = 0.0;
   @override
   void initState() {
     super.initState();
-    _controller = YoutubePlayerController(
-      initialVideoId: videoId,
-      flags: const YoutubePlayerFlags(
-        mute: false,
-        autoPlay: true,
-        disableDragSeek: false,
-        loop: true,
-        isLive: false,
-        forceHD: true,
-        enableCaption: false,
-        hideControls: true,
-        hideThumbnail: true,
-        showLiveFullscreenButton: false,
-      ),
-    );
-    Timer.periodic(Duration(seconds: 1), (timer) => _updateTime());
+    cek();
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Image.asset('assets/logo/image.png'),
-              DigitalClock(
-                  showSeconds: false,
-                  isLive: false,
-                  digitalClockTextColor: Colors.white,
-                  textScaleFactor: 2.5,
-                  datetime: jam),
-              Row(
-                children: [
-                  Container(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            "Selamat datang, Rauf Endro",
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
-                          Text(
-                            "No. Kamar 729",
-                            style: TextStyle(fontSize: 15, color: Colors.white),
-                          ),
-                        ]),
-                  ),
-                ],
-              )
-            ],
-          ),
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Unduh video'),
+            Text('Mengunduh ' +
+                downloadedVideos.toString() +
+                '/' +
+                videoUrls.length.toString()),
+            if (_progress > 0 && _progress < 1)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: LinearProgressIndicator(value: _progress),
+              ),
+          ],
         ),
-        body: SafeArea(
-            child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       // Image.asset('assets/logo/image.png'),
-              //       DigitalClock(
-              //           showSeconds: false,
-              //           isLive: false,
-              //           digitalClockTextColor: Colors.white,
-              //           textScaleFactor: 2.5,
-              //           datetime: DateTime.now()),
-              //       Row(
-              //         children: [
-              //           InkWell(
-              //             onTap: () {},
-              //             child: Container(
-              //               child: Column(
-              //                   crossAxisAlignment: CrossAxisAlignment.end,
-              //                   children: [
-              //                     Text(
-              //                       "Selamat datang, Rauf Endro",
-              //                       style: TextStyle(
-              //                           fontSize: 18, color: Colors.white),
-              //                     ),
-              //                     Text(
-              //                       "No. Kamar 729",
-              //                       style: TextStyle(
-              //                           fontSize: 15, color: Colors.white),
-              //                     ),
-              //                   ]),
-              //             ),
-              //           ),
-              //         ],
-              //       )
-              //     ],
-              //   ),
-              // ),
+      ),
+    );
+  }
+}
 
-              // Padding(
-              //   padding: const EdgeInsets.only(left: 60, top: 20),
-              //   child: InkWell(
-              //     onTap: () {},
-              //     child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Row(
-              //           children: [
-              //             Icon(Icons.wifi),
-              //             SizedBox(
-              //               width: 10,
-              //             ),
-              //             Text(
-              //               "Informasi Wifi Pengunjung",
-              //               style: TextStyle(fontWeight: FontWeight.bold),
-              //             ),
-              //           ],
-              //         ),
-              //         Text("SSID : Hotelku"),
-              //         Text("Username : kamar729"),
-              //         Text("Password : azHgsko13")
-              //       ],
-              //     ),
-              //   ),
-              // ),
+class VideoListScreen extends StatelessWidget {
+  final List<String> videoPaths;
 
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 50),
-              //   child: InkWell(
-              //     child: Container(
-              //       width: MediaQuery.of(context).size.width,
-              //       height: 200,
-              //       decoration: BoxDecoration(
-              //           border: Border.all(width: 1, color: Colors.white),
-              //           borderRadius: BorderRadius.circular(20)),
-              //       child: VideoPlayer(_controller),
-              //     ),
-              //   ),
-              // ),
-              SizedBox(
-                height: 30,
-              ),
-              Center(
-                child: InkWell(
-                  onTap: () {},
-                  child: Container(
-                    height: 300,
-                    width: 500,
-                    child: YoutubePlayerBuilder(
-                      player: YoutubePlayer(controller: _controller),
-                      builder: (context, player) => Scaffold(
-                        key: _scaffoldKey,
-                        body: ListView(
-                          children: [
-                            player,
-                          ],
-                        ),
-                      ),
-                    ),
+  VideoListScreen({required this.videoPaths});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Downloaded Videos')),
+      body: ListView.builder(
+        itemCount: videoPaths.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text('Video ${index + 1}'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FullscreenVideoPlayer(
+                    videoPaths: videoPaths,
+                    initialIndex: index,
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Row(
-                  children: [
-                    Text(
-                      "Streaming",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.tv_rounded)
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () async {
-                        print("pencet");
-                        final Uri _url = Uri.parse('nflx://www.netflix.com');
-                        // final Uri _url = Uri.parse('https://www.youtube.com/');
-                        if (!await launchUrl(_url)) {
-                          throw Exception('Could not launch $_url');
-                        }
-                      },
-                      child: Container(
-                        width: 200,
-                        height: 100,
-                        child: Center(
-                            child: Image.network(
-                                "https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png",
-                                width: 100)),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white, width: 2)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 30,
-                    ),
-                    InkWell(
-                      onTap: () async {
-                        final Uri _url = Uri.parse('https://www.youtube.com/');
-                        if (!await launchUrl(_url)) {
-                          throw Exception('Could not launch $_url');
-                        }
-                      },
-                      child: Container(
-                        width: 200,
-                        height: 100,
-                        child: Center(
-                            child: Image.network(
-                                "http://raufendro-dev.com/gambar/yt.png",
-                                width: 100)),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white, width: 2)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 30,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        context.push('/salurantv');
-                      },
-                      child: Container(
-                        width: 200,
-                        height: 100,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white, width: 2)),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.live_tv_rounded,
-                              size: 50,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text("Live TV")
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 37,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Row(
-                  children: [
-                    Text(
-                      "Room",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.hotel_rounded)
-                  ],
-                ),
-              ),
-              Container(
-                height: 300,
-                child: GridView(
-                    // scrollDirection: Axis.vertical,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 6),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InkWell(
-                          onTap: () {
-                            context.push('/informasiwifi');
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: Colors.white, width: 2)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.wifi_rounded,
-                                  size: 50,
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text("Informasi Wifi")
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InkWell(
-                          onTap: () {
-                            context.push('/pelayanankamar');
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: Colors.white, width: 2)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.room_service_outlined,
-                                  size: 50,
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text("Pelayanan Kamar")
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InkWell(
-                          onTap: () {},
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: Colors.white, width: 2)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.restaurant_rounded,
-                                  size: 50,
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text("Pesan Makan")
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InkWell(
-                          onTap: () {},
-                          child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border:
-                                    Border.all(color: Colors.white, width: 2)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.info_outline_rounded,
-                                  size: 50,
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text("Status Kamar")
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ]),
-              )
-            ],
-          ),
-        )),
+              );
+            },
+          );
+        },
       ),
+    );
+  }
+}
+
+class FullscreenVideoPlayer extends StatefulWidget {
+  final List<String> videoPaths;
+  final int initialIndex;
+
+  FullscreenVideoPlayer({
+    required this.videoPaths,
+    required this.initialIndex,
+  });
+
+  @override
+  _FullscreenVideoPlayerState createState() => _FullscreenVideoPlayerState();
+}
+
+class _FullscreenVideoPlayerState extends State<FullscreenVideoPlayer> {
+  late VideoPlayerController _controller;
+  ChewieController? _chewieController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _initializePlayer();
+  }
+
+  Future<void> _initializePlayer() async {
+    if (_chewieController != null) {
+      _chewieController!.dispose();
+    }
+
+    _controller =
+        VideoPlayerController.file(File(widget.videoPaths[_currentIndex]))
+          ..initialize().then((_) {
+            setState(() {});
+            _controller.play();
+          });
+    if (_controller != null) {
+      _controller.dispose();
+    }
+    _controller.addListener(_videoListener);
+    _chewieController = ChewieController(
+        videoPlayerController: _controller,
+        aspectRatio: 16 / 9,
+        autoPlay: true,
+        looping: false,
+        allowFullScreen: true);
+  }
+
+  void _videoListener() {
+    if (_controller.value.position >= _controller.value.duration) {
+      _playNextVideo();
+    }
+  }
+
+  // Future<void> _initializePlayer() async {
+  //   _controller =
+  //       VideoPlayerController.file(File(widget.videoPaths[_currentIndex]))
+  //         ..initialize().then((_) {
+  //           setState(() {});
+  //           _controller.play();
+  //         });
+  //   _chewieController = ChewieController(
+  //     videoPlayerController: _controller,
+  //     aspectRatio: _controller.value.aspectRatio,
+  //     autoPlay: true,
+  //     looping: true,
+  //   );
+  // }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  void _playNextVideo() {
+    _currentIndex = (_currentIndex + 1) % widget.videoPaths.length;
+    _initializePlayer();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+          child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Chewie(
+          controller: _chewieController!,
+        ),
+      )),
     );
   }
 }
